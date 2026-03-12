@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>PSYCHE: The Infinite Mind</title>
+    <style>
+      :root {
+        --bg: #030308;
+        --accent: #00f2ff;
+        --glass: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.1);
+      }
+
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        color: white;
+        user-select: none;
+      }
+
+      canvas {
+        display: block;
+        touch-action: none;
+        filter: contrast(1.1) saturate(1.2);
+      }
+
+      /* UI Overlay Systems */
+      #hud {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        padding: 30px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        z-index: 10;
+      }
+
+      .glass-panel {
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        padding: 15px 25px;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      }
+
+      .stats-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .score-box {
+        text-align: left;
+      }
+      .label {
+        font-size: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        opacity: 0.6;
+        margin-bottom: 5px;
+      }
+      .value {
+        font-size: 32px;
+        font-weight: 200;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .stress-box {
+        width: 250px;
+      }
+      .stress-bar-wrap {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+      #stress-fill {
+        width: 0%;
+        height: 100%;
+        background: var(--accent);
+        box-shadow: 0 0 15px var(--accent);
+        transition: width 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      }
+
+      /* Menu System */
+      #menu {
+        position: absolute;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(
+          circle at center,
+          rgba(3, 3, 15, 0.95) 0%,
+          #000 100%
+        );
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #menu.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(1.1);
+      }
+
+      h1 {
+        font-size: 80px;
+        font-weight: 100;
+        letter-spacing: 25px;
+        margin: 0;
+        color: #fff;
+        text-align: center;
+      }
+      .subtitle {
+        font-size: 14px;
+        letter-spacing: 8px;
+        opacity: 0.4;
+        margin-bottom: 50px;
+        font-weight: 300;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      button {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 18px 45px;
+        font-size: 12px;
+        letter-spacing: 4px;
+        cursor: pointer;
+        border-radius: 50px;
+        transition: all 0.4s;
+        position: relative;
+        overflow: hidden;
+      }
+      button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        transition: 0.5s;
+      }
+      button:hover {
+        border-color: #fff;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+      }
+      button:hover::before {
+        left: 100%;
+      }
+      button.primary {
+        background: white;
+        color: black;
+        border: none;
+        font-weight: 600;
+      }
+      button.primary:hover {
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+      }
+
+      /* Achievements / Vision Board */
+      #achievements {
+        display: flex;
+        gap: 15px;
+        margin-top: 40px;
+      }
+      .slot {
+        width: 50px;
+        height: 50px;
+        border: 1px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: 0.5s;
+        opacity: 0.3;
+      }
+      .slot.unlocked {
+        opacity: 1;
+        border-style: solid;
+        border-color: var(--accent);
+        box-shadow: 0 0 15px var(--accent);
+        background: rgba(0, 242, 255, 0.1);
+      }
+
+      #high-score {
+        margin-top: 30px;
+        font-size: 12px;
+        letter-spacing: 2px;
+        opacity: 0.5;
+      }
+
+      /* Animation Classes */
+      .shake {
+        animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translate3d(-1px, 0, 0);
+        }
+        20%,
+        80% {
+          transform: translate3d(2px, 0, 0);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translate3d(-4px, 0, 0);
+        }
+        40%,
+        60% {
+          transform: translate3d(4px, 0, 0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hud">
+      <div class="top-bar stats-top">
+        <div class="score-box glass-panel">
+          <div class="label">Consciousness</div>
+          <div class="value" id="score-val">0000</div>
+        </div>
+        <div class="stress-box glass-panel">
+          <div class="label" id="status-label">Neural Stress</div>
+          <div class="stress-bar-wrap"><div id="stress-fill"></div></div>
+        </div>
+      </div>
+      <div
+        id="high-score-hud"
+        style="
+          text-align: right;
+          opacity: 0.4;
+          font-size: 10px;
+          letter-spacing: 2px;
+        "
+      >
+        BEST: 0
+      </div>
+    </div>
+
+    <div id="menu">
+      <h1 id="menu-title">PSYCHE</h1>
+      <div class="subtitle">THE INFINITE MIND</div>
+      <div class="btn-group">
+        <button class="primary" onclick="start('survival')">
+          INITIATE SURVIVAL
+        </button>
+        <button onclick="start('zen')">ZEN STATE</button>
+      </div>
+      <div id="achievements">
+        <div class="slot" id="slot-1" title="Reach 500 Score">🌌</div>
+        <div class="slot" id="slot-2" title="Reach 1500 Score">🧬</div>
+        <div class="slot" id="slot-3" title="Reach 3000 Score">💎</div>
+      </div>
+      <div id="high-score">HIGHEST EXPANSION: 0</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const menu = document.getElementById("menu");
+      const scoreEl = document.getElementById("score-val");
+      const stressFill = document.getElementById("stress-fill");
+      const highScoreEl = document.getElementById("high-score");
+      const highScoreHud = document.getElementById("high-score-hud");
+
+      let w, h, player, thoughts, threats, particles, synpases;
+      let score = 0,
+        stress = 0,
+        gameActive = false,
+        timeScale = 1;
+      let mode = "survival",
+        frame = 0,
+        shake = 0,
+        biome = 0;
+      let highscore = localStorage.getItem("psyche_highscore") || 0;
+
+      highScoreEl.innerText = `HIGHEST EXPANSION: ${highscore}`;
+      highScoreHud.innerText = `BEST: ${highscore}`;
+
+      const keys = {};
+      const touch = { active: false, x: 0, y: 0 };
+
+      window.addEventListener("resize", resize);
+      window.addEventListener("keydown", (e) => (keys[e.code] = true));
+      window.addEventListener("keyup", (e) => (keys[e.code] = false));
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          touch.active = true;
+          updateTouch(e);
+        },
+        { passive: false },
+      );
+      canvas.addEventListener("touchmove", (e) => updateTouch(e), {
+        passive: false,
+      });
+      canvas.addEventListener("touchend", () => (touch.active = false));
+
+      function updateTouch(e) {
+        e.preventDefault();
+        touch.x = e.touches[0].clientX;
+        touch.y = e.touches[0].clientY;
+      }
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+
+      class Player {
+        constructor() {
+          this.x = w / 2;
+          this.y = h / 2;
+          this.r = 18;
+          this.vx = 0;
+          this.vy = 0;
+          this.acc = 0.8;
+          this.fric = 0.92;
+          this.history = [];
+        }
+        update() {
+          if (keys["KeyW"] || keys["ArrowUp"]) this.vy -= this.acc;
+          if (keys["KeyS"] || keys["ArrowDown"]) this.vy += this.acc;
+          if (keys["KeyA"] || keys["ArrowLeft"]) this.vx -= this.acc;
+          if (keys["KeyD"] || keys["ArrowRight"]) this.vx += this.acc;
+
+          if (touch.active) {
+            const dx = touch.x - this.x,
+              dy = touch.y - this.y;
+            const d = Math.hypot(dx, dy);
+            if (d > 10) {
+              this.vx += (dx / d) * this.acc;
+              this.vy += (dy / d) * this.acc;
+            }
+          }
+
+          this.x += this.vx * timeScale;
+          this.y += this.vy * timeScale;
+          this.vx *= this.fric;
+          this.vy *= this.fric;
+
+          // Screen Wrap
+          if (this.x < 0) this.x = w;
+          if (this.x > w) this.x = 0;
+          if (this.y < 0) this.y = h;
+          if (this.y > h) this.y = 0;
+
+          // Motion Trail
+          this.history.push({ x: this.x, y: this.y });
+          if (this.history.length > 10) this.history.shift();
+        }
+        draw() {
+          // Draw Trail
+          ctx.save();
+          this.history.forEach((pos, i) => {
+            ctx.globalAlpha = i / 15;
+            ctx.fillStyle = mode === "zen" ? "#ffcc00" : "#00f2ff";
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, this.r * (i / 10), 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.restore();
+
+          // Draw Core
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          const pulse = Math.sin(frame * 0.1) * 2;
+          ctx.shadowBlur = 30;
+          ctx.shadowColor = mode === "zen" ? "#ffcc00" : "#00f2ff";
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          // Squash and stretch based on velocity
+          const stretch = Math.min(Math.hypot(this.vx, this.vy) * 0.05, 0.5);
+          ctx.ellipse(
+            0,
+            0,
+            this.r + pulse + stretch * 10,
+            this.r + pulse - stretch * 10,
+            Math.atan2(this.vy, this.vx),
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      class Thought {
+        constructor() {
+          this.init();
+        }
+        init() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.r = Math.random() * 6 + 6;
+          this.hue = mode === "zen" ? 45 : 180;
+          this.pulse = Math.random() * Math.PI;
+        }
+        draw() {
+          this.pulse += 0.05;
+          const s = this.r + Math.sin(this.pulse) * 4;
+          ctx.save();
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = `hsla(${this.hue}, 100%, 50%, 0.8)`;
+          ctx.fillStyle = `hsla(${this.hue}, 100%, 70%, 0.9)`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, s, 0, Math.PI * 2);
+          ctx.fill();
+          // Outer ring
+          ctx.strokeStyle = `hsla(${this.hue}, 100%, 50%, 0.3)`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, s + 10, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      class Threat {
+        constructor() {
+          this.x = Math.random() > 0.5 ? -50 : w + 50;
+          this.y = Math.random() * h;
+          this.r = 14;
+          this.speed = Math.random() * 1.5 + 1.5 + score / 1000;
+          this.points = [];
+          for (let i = 0; i < 3; i++) this.points.push({ x: 0, y: 0 });
+        }
+        update(target) {
+          const angle = Math.atan2(target.y - this.y, target.x - this.x);
+          this.x += Math.cos(angle) * this.speed * timeScale;
+          this.y += Math.sin(angle) * this.speed * timeScale;
+
+          // Segmented body logic
+          this.points.unshift({ x: this.x, y: this.y });
+          if (this.points.length > 8) this.points.pop();
+        }
+        draw() {
+          ctx.save();
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = mode === "zen" ? "#fff" : "#ff3366";
+          ctx.strokeStyle =
+            mode === "zen" ? "rgba(255,255,255,0.3)" : "#ff3366";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          this.points.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          });
+          ctx.stroke();
+
+          // Head
+          ctx.fillStyle = mode === "zen" ? "rgba(255,255,255,0.8)" : "#ff3366";
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      class Particle {
+        constructor(x, y, color) {
+          this.x = x;
+          this.y = y;
+          const angle = Math.random() * Math.PI * 2;
+          const force = Math.random() * 8 + 2;
+          this.vx = Math.cos(angle) * force;
+          this.vy = Math.sin(angle) * force;
+          this.life = 1.0;
+          this.color = color;
+          this.size = Math.random() * 3 + 1;
+        }
+        update() {
+          this.x += this.vx * timeScale;
+          this.y += this.vy * timeScale;
+          this.vx *= 0.96;
+          this.vy *= 0.96;
+          this.life -= 0.015;
+        }
+        draw() {
+          ctx.globalAlpha = this.life;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = this.color;
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function start(m) {
+        mode = m;
+        resize();
+        player = new Player();
+        thoughts = Array.from({ length: 6 }, () => new Thought());
+        threats = [];
+        particles = [];
+        score = 0;
+        stress = 0;
+        frame = 0;
+        biome = 0;
+        gameActive = true;
+        menu.classList.add("hidden");
+        loop();
+      }
+
+      function triggerShake() {
+        shake = 15;
+        document.body.classList.add("shake");
+        setTimeout(() => document.body.classList.remove("shake"), 400);
+      }
+
+      function checkAchievements() {
+        if (score >= 500)
+          document.getElementById("slot-1").classList.add("unlocked");
+        if (score >= 1500)
+          document.getElementById("slot-2").classList.add("unlocked");
+        if (score >= 3000)
+          document.getElementById("slot-3").classList.add("unlocked");
+
+        if (score > highscore) {
+          highscore = score;
+          localStorage.setItem("psyche_highscore", highscore);
+          highScoreEl.innerText = `HIGHEST EXPANSION: ${highscore}`;
+          highScoreHud.innerText = `BEST: ${highscore}`;
+        }
+      }
+
+      function loop() {
+        if (!gameActive) return;
+
+        // Background & Biome Logic
+        biome = Math.floor(score / 1000);
+        const baseHue =
+          mode === "zen"
+            ? (frame * 0.2) % 360
+            : [210, 280, 0][Math.min(biome, 2)];
+
+        ctx.fillStyle = "#030308";
+        ctx.fillRect(0, 0, w, h);
+
+        // Screen Shake & Chromatic Aberration Simulation
+        ctx.save();
+        if (shake > 0) {
+          ctx.translate(
+            Math.random() * shake - shake / 2,
+            Math.random() * shake - shake / 2,
+          );
+          shake *= 0.9;
+        }
+
+        // Neural Background
+        ctx.strokeStyle = `hsla(${baseHue}, 50%, 40%, 0.1)`;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 15; i++) {
+          const x = (Math.sin(frame * 0.001 + i) * 0.4 + 0.5) * w;
+          const y = (Math.cos(frame * 0.0012 + i) * 0.4 + 0.5) * h;
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.stroke();
+          // Connect to player
+          const d = Math.hypot(player.x - x, player.y - y);
+          if (d < 300) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(player.x, player.y);
+            ctx.globalAlpha = (1 - d / 300) * 0.2;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+        }
+
+        if (timeScale < 1) timeScale += 0.02;
+
+        player.update();
+        player.draw();
+
+        thoughts.forEach((t) => {
+          t.draw();
+          if (Math.hypot(player.x - t.x, player.y - t.y) < player.r + t.r) {
+            score += 50;
+            scoreEl.innerText = score.toString().padStart(4, "0");
+            const c = mode === "zen" ? "#ffcc00" : "#00f2ff";
+            for (let i = 0; i < 20; i++)
+              particles.push(new Particle(t.x, t.y, c));
+            t.init();
+            if (mode === "survival" && threats.length < 3 + score / 1500)
+              threats.push(new Threat());
+            checkAchievements();
+          }
+        });
+
+        threats.forEach((th, i) => {
+          th.update(player);
+          th.draw();
+          if (Math.hypot(player.x - th.x, player.y - th.y) < player.r + th.r) {
+            if (mode === "survival") {
+              stress += 25;
+              timeScale = 0.05;
+              triggerShake();
+              for (let j = 0; j < 30; j++)
+                particles.push(new Particle(player.x, player.y, "#ff3366"));
+              threats.splice(i, 1);
+            } else {
+              timeScale = 0.4; // Zen mode just slows down on hit
+            }
+          }
+        });
+
+        particles.forEach((p, i) => {
+          p.update();
+          p.draw();
+          if (p.life <= 0) particles.splice(i, 1);
+        });
+
+        ctx.restore();
+
+        // UI Progress
+        const barVal = mode === "zen" ? (score % 1000) / 10 : stress;
+        stressFill.style.width = barVal + "%";
+        stressFill.style.background =
+          mode === "zen"
+            ? `hsl(${baseHue}, 80%, 60%)`
+            : stress > 70
+              ? "#ff3366"
+              : "#00f2ff";
+
+        if (mode === "survival" && stress >= 100) gameOver();
+
+        frame++;
+        requestAnimationFrame(loop);
+      }
+
+      function gameOver() {
+        gameActive = false;
+        document.getElementById("menu-title").innerText = "SYSTEM CRASH";
+        document.getElementById("menu-title").style.color = "#ff3366";
+        menu.classList.remove("hidden");
+      }
+
+      resize();
+    </script>
+  </body>
+</html>
