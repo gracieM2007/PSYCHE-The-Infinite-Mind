@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: psyche-the-infinite-mind
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./

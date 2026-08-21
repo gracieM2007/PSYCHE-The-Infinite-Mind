@@ -2,10 +2,22 @@
 
 > *An immersive, minimalist HTML5 Canvas experience exploring the vast expanse of human consciousness.*
 
+[![Live Demo on Render](https://img.shields.io/badge/Render-Live%20Demo-00f2ff?style=for-the-badge&logo=render&logoColor=white)](https://psyche-the-infinite-mind.onrender.com)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/gracieM2007/PSYCHE-The-Infinite-Mind)
+
 [![HTML5 Canvas](https://img.shields.io/badge/Canvas-HTML5-orange.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
 [![JavaScript](https://img.shields.io/badge/Language-ES6%2B%20JavaScript-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](#license)
 [![Device Support](https://img.shields.io/badge/Platform-Desktop%20%7C%20Mobile-brightgreen.svg)](#controls)
+
+---
+
+## 🌐 Live Demo & Instant Deployment
+
+- ⚡ **Play Live on Render**: **[https://psyche-the-infinite-mind.onrender.com](https://psyche-the-infinite-mind.onrender.com)**
+- 🚀 **Deploy Your Own Copy**: Click the button below to deploy your own instance to Render in 1 click:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/gracieM2007/PSYCHE-The-Infinite-Mind)
 
 ---
 
@@ -55,30 +67,28 @@ Designed with a modern glassmorphic UI overlay, dynamic time-dilation mechanics,
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & Hosting
 
 Because **PSYCHE** is built with zero external framework dependencies or build scripts, getting started takes seconds:
 
-### Option 1: Direct File Open
-Simply open [`home.html`](file:///c:/Users/DELL/OneDrive/Desktop/PSYCHE%20The%20Infinite%20Mind/home.html) directly in any web browser (Chrome, Edge, Firefox, Safari).
+### 1. Play Online (Render)
+Visit **[https://psyche-the-infinite-mind.onrender.com](https://psyche-the-infinite-mind.onrender.com)** to play directly in your browser.
 
-### Option 2: Local HTTP Server (Recommended)
-Using a lightweight static server avoids local file security restrictions and ensures optimal web performance:
+### 2. Direct Local Open
+Simply open [`index.html`](file:///c:/Users/DELL/OneDrive/Desktop/PSYCHE%20The%20Infinite%20Mind/index.html) or [`home.html`](file:///c:/Users/DELL/OneDrive/Desktop/PSYCHE%20The%20Infinite%20Mind/home.html) directly in any browser (Chrome, Edge, Firefox, Safari).
 
-**Using Python:**
+### 3. Local HTTP Server
+Using Python:
 ```bash
 python -m http.server 8000
-# Open http://localhost:8000/home.html in your browser
+# Open http://localhost:8000 in your browser
 ```
 
-**Using Node.js (`npx serve`):**
+Using Node.js (`npx serve`):
 ```bash
 npx serve .
-# Open the displayed local URL (e.g., http://localhost:3000/home.html)
+# Open http://localhost:3000
 ```
-
-**Using VS Code:**
-Right-click `home.html` and select **"Open with Live Server"**.
 
 ---
 
@@ -99,8 +109,10 @@ Right-click `home.html` and select **"Open with Live Server"**.
 
 ```
 PSYCHE The Infinite Mind/
-├── home.html        # Complete single-file application containing Markup, CSS, & Game Engine
-└── README.md        # Project documentation & guide
+├── index.html       # Primary static web server entry point
+├── home.html        # Game application HTML5 source
+├── render.yaml      # Render static site blueprint configuration
+└── README.md        # Documentation with Live Demo & Render Deploy Button
 ```
 
 ---
